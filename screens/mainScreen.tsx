@@ -1,6 +1,6 @@
 import { useNavigation } from '@react-navigation/native';
 import { useState,useEffect, useContext } from 'react';
-import {View,Text, SafeAreaView, StyleSheet,Switch, Animated,TouchableOpacity, Dimensions, ScrollView} from 'react-native'
+import {View,Text, SafeAreaView, StyleSheet,Switch, Animated,TouchableOpacity, Dimensions, ScrollView, FlatList} from 'react-native'
 import { LineChart } from 'react-native-chart-kit';
 import { RootStackParamList } from "../type.ts";
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -10,11 +10,11 @@ type MainScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'M
 export default function MainScreen(){
     const data=useContext(MQTTContext).toString();
     const [curTime,setCurTime]=useState(1);
-    const window_width_prev=Dimensions.get("window").width*0.15;
+    const window_width_prev=Dimensions.get("window").width;
     const [window_width,setWindow_width]=useState(window_width_prev);
     const containerHeight=Dimensions.get("window").height*0.36/1.3;
 
-    const humid_window_width_prev=Dimensions.get("window").width*0.15;
+    const humid_window_width_prev=Dimensions.get("window").width;
     const [humid_window_width,setHumid_window_width]=useState(humid_window_width_prev);
     const humid_containerHeight=Dimensions.get("window").height*0.7/1.3;
 
@@ -23,13 +23,11 @@ export default function MainScreen(){
     const [line_chart_data1, setLine_chart_data1] = useState([
         {time:0,value:0},
         {time:1,value:0},
-        {time:2,value:10},
     ]);
-    const line_chart_data2=[
+    const [line_chart_data2,setLine_chart_data2]=useState([
         {time:0,value:0},
-        {time:1,value:1},
-        {time:2,value:10},
-    ];
+        {time:1,value:0},
+    ]);
 
     const tempLable=[{value:0},{value:10},{value:20},{value:30},{value:40},{value:50}];
     const humidLable=[{value:0},{value:10},{value:20},{value:30},{value:40},{value:50},{value:60},{value:70},{value:80},{value:90},{value:100}];
@@ -38,24 +36,63 @@ export default function MainScreen(){
     const [text,setText]= useState('on');
     const [temp,setTemp]=useState("25");
     const [humid,setHumid]=useState("80");
+
+    useEffect(() => {
+        // const newTime = curTime + 1;
+        // setCurTime(newTime);
+        // setLine_chart_data(prevData => [...prevData, { time: newTime }]);
+        
+        // Update the temperature and humidity from new data
+        // console.log('duoc goi 1 time la '+ curTime+"\n");
+        const newTemp = data.split('-')[0];
+        const newHumid = data.split('-')[1];
+        setTemp(newTemp);
+        setHumid(newHumid);
+        
+        // // Update the chart data with new values
+        // const newValue1 = parseFloat(newTemp);
+        // const newValue2 = parseFloat(newHumid);
+        // setLine_chart_data1(prevData => [...prevData, { time: newTime, value: newValue1 }]);
+        // setLine_chart_data2(prevData => [...prevData, { time: newTime, value: newValue2 }]);
+
+        // // Increase the width of the chart each time new data is added
+        // setWindow_width(prevWidth => prevWidth + Dimensions.get("window").width * 0.15);
+        // setHumid_window_width(prevWidth => prevWidth + Dimensions.get("window").width * 0.15);
+    });
+
     const [flag,setFlag]=useState("");
     const [prevFlag, setPrevFlag] = useState("");
 
     useEffect(() => {
         if (flag !== prevFlag) {
+            // console.log('duoc goi 2 time la '+curTime+"\n");
             const newTime = curTime + 1;
             setCurTime(newTime);
             const newValue = parseFloat(data.split('-')[0]); // Chuyển đổi dữ liệu MQTT thành giá trị số
             setLine_chart_data(prevData => [...prevData, { time: newTime, value: newValue }]);
 
             // Tăng chiều rộng của biểu đồ mỗi khi có điểm dữ liệu mới
-            setWindow_width(prevWidth => prevWidth + Dimensions.get("window").width * 0.15);
-            setHumid_window_width(prevWidth => prevWidth + Dimensions.get("window").width * 0.15);
+            setWindow_width(prevWidth => prevWidth + 30);
+            setHumid_window_width(prevWidth => prevWidth + 30);
             setPrevFlag(flag);
 
-            // const newTime1 = line_chart_data1[line_chart_data1.length - 1].time + 1;
-            // const newValue1 = parseFloat(data.split('-')[0]);
-            // setLine_chart_data1(prevData => [...prevData, { time: newTime1, value: newValue1 }]);
+            if(curTime==1 || curTime ==2){
+                // console.log('da co gia tri ');
+            }else{
+                const newTime1 = line_chart_data1[line_chart_data1.length - 1].time + 1;
+                const newValue1 = parseFloat(data.split('-')[0]);
+                console.log('diem moi them vao la '+newTime1+"-"+newValue1+"\n");
+                setLine_chart_data1(prevData => [...prevData, { time: newTime1, value: newValue1 }]);
+            }
+            if(curTime==1 || curTime ==2){
+                // console.log('da co gia tri ');
+            }else{
+                const newTime2 = line_chart_data2[line_chart_data2.length - 1].time + 1;
+                const newValue2 = parseFloat(data.split('-')[1]);
+                console.log('diem moi them vao la '+newTime2+"-"+newValue2+"\n");
+                setLine_chart_data2(prevData => [...prevData, { time: newTime2, value: newValue2 }]);
+            }
+
             // for(var i=0;i<line_chart_data1.length;i++){
             //     console.log(line_chart_data1[i].time+"-"+line_chart_data1[i].value+"\n");
             // }
@@ -63,6 +100,7 @@ export default function MainScreen(){
     }, [flag, prevFlag, data, curTime]);
 
     useEffect(() => {
+        // console.log("duoc goi 3 time la "+curTime+"\n");
         const newTemp = data.split('-')[0];
         const newHumid = data.split('-')[1];
         const newFlag = data.split('-')[2];
@@ -72,7 +110,6 @@ export default function MainScreen(){
             setFlag(newFlag);
         }
     }, [data, flag]);
-
 
     const navigation=useNavigation<MainScreenNavigationProp>();
     const marginFor_X_fromLeft=40;
@@ -98,7 +135,7 @@ export default function MainScreen(){
     const humid_gap_between_x_axis_ticks=humid_x_axis_actual_width/(line_chart_data.length-1);
 
     const y_axis_x1_point=marginFor_X_fromLeft;
-    const y_axis_y1_point=padding_from_screenBorder;
+    const y_axis_y1_point=padding_from_screenBorder+10;
     const y_axis_x2_point=marginFor_X_fromLeft;
     const y_axis_y2_point=containerHeight-marginFor_y_FromBottom;
 
@@ -393,7 +430,7 @@ export default function MainScreen(){
             let dPath='';
             line_chart_data1.map((item,index)=>{
                 let x_point = x_axis_x1_point+gap_between_x_axis_ticks*item.time;
-                let y_point =(maxValueAtYAxis-item.value) * (gap_between_y_axis_ticks/gapBetweenYAxisValues)+padding_from_screenBorder;
+                let y_point =(maxValueAtYAxis-item.value) * (gap_between_y_axis_ticks/gapBetweenYAxisValues)+padding_from_screenBorder+10;
                 if(index===0){
                     dPath+= `M${x_point} ${y_point}`
                 }else{
@@ -446,7 +483,7 @@ export default function MainScreen(){
         if(maxValueAtYAxis){
             return line_chart_data1.map((item,index)=>{
                 let x_point = x_axis_x1_point+gap_between_x_axis_ticks*item.time;
-                let y_point =(maxValueAtYAxis-item.value) * (gap_between_y_axis_ticks/gapBetweenYAxisValues)+padding_from_screenBorder;
+                let y_point =(maxValueAtYAxis-item.value) * (gap_between_y_axis_ticks/gapBetweenYAxisValues)+padding_from_screenBorder+10;
                 return (
                     <G
                         key={`line chart circles${item.time}`}
@@ -512,6 +549,23 @@ export default function MainScreen(){
 
         setIsEnable(previousState => !previousState)
     }
+
+    // const renderItem = ({ item }:any) => (
+    //     <View style={{ flexDirection: 'row', width: Dimensions.get('window').width * 2 }}>
+    //         <Svg style={[styles.svgStyle, { width: Dimensions.get('window').width }]}>
+    //             {render_x_y_axis()}
+    //             {humid_render_x_y_axis()}
+    //             {render_x_axis_labels_and_ticks()}
+    //             {humid_render_x_axis_labels_and_ticks()}
+    //             {render_y_axis_labels_and_ticks()}
+    //             {humid_render_y_axis_labels_and_ticks()}
+    //             {render_lineChart_path()}
+    //             {humid_render_lineChart_path()}
+    //             {render_lineChart_circles_values()}
+    //             {humid_render_lineChart_circles_values()}
+    //         </Svg>
+    //     </View>
+    // );
     return (
         <SafeAreaView style={styles.container}>
             <View style={styles.buttonContainer}>
@@ -530,7 +584,7 @@ export default function MainScreen(){
                     <Switch
                         onValueChange={toggleSwitch}
                         value={isEnable}
-                        style={{marginLeft:"23%", marginRight:"23%"}}
+                        style={{marginLeft:"23%", marginRight:"22.5%"}}
                         trackColor={{false:"grey", true:"grey"}}
                         thumbColor={isEnable?"lightgreen":"red"}
                     >
@@ -561,6 +615,15 @@ export default function MainScreen(){
                         {humid_render_lineChart_circles_values()}
                     </Svg>
                 </ScrollView>
+                {/* <FlatList
+                    data={data}
+                    renderItem={renderItem}
+                    keyExtractor={(item,index) => index.toString()}
+                    horizontal={true}
+                    showsHorizontalScrollIndicator={false}
+                    pagingEnabled={true}
+                    initialNumToRender={1}
+                /> */}
             </View>
 
             <View style={styles.connectContainer}>

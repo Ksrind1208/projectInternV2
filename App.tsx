@@ -21,15 +21,17 @@ export default function App() {
           try {
             const client = await connectMQTT((message:any) => {
               if (message.destinationName == "home/sensor/TemperatureandHumid") {
-                const data = message.payloadString;
-                setTemp_Humid_all(data);
+                  const data = message.payloadString;
+                if(data.split('-').length<4){
+                  setTemp_Humid_all(data);
+                }
+
               }
             });
           } catch (error) {
             console.error("Failed to connect to MQTT:", error);
           }
         };
-    
         initializeMQTT();
       },[]);
 

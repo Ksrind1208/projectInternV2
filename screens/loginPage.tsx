@@ -4,7 +4,7 @@ import { Text, View, SafeAreaView, StyleSheet, TouchableOpacity, TextInput, Keyb
 import { Image } from "react-native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../type.ts"; 
-
+import { sendRequesttoGate } from "../server/mqttService.tsx";
 const logoCTY = require('../assets/images/logoCTY.png');
 
 type LoginPageNavigationProp = NativeStackNavigationProp<RootStackParamList, 'LoginPage'>;
@@ -42,6 +42,7 @@ export default function LoginPage() {
                     <View style={styles.buttonContainer}>
                         <TouchableOpacity style={styles.button} onPress={() => {
                             if ((valEmail === curEmail && valPassword === curPassword) || (valEmail=="" && valPassword=="")) {
+                                sendRequesttoGate("ON");
                                 navigation.navigate('MainScreen');
                             }else{
                                 Alert.alert('Wrong email or password');
